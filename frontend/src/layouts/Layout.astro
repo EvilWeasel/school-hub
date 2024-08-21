@@ -4,10 +4,43 @@ interface Props {
 }
 
 const { title } = Astro.props;
+import { AccountButton } from "@/components/account-button";
+import { Toaster } from "@/components/ui/toaster";
+import "@/styles/globals.css";
+
+let pb;
+let model;
+
+let user;
+let imageUrl;
+try {
+  pb = Astro.locals.pb;
+  model = pb.authStore.model;
+  if (model) {
+    user = await pb.collection("users").getOne(model.id);
+    const fileName = user.avatar;
+    const token = pb.files.getToken();
+    imageUrl = pb.files.getUrl(user, fileName, { token: token });
+    // console.info(imageUrl);
+  } else {
+    console.error(
+      "DB not connected! Maybe you forgot to start the PocketBase instance, or misconfigured the connection-string?",
+      "PocketBase Instance:\n",
+      pb,
+      "Model:\n",
+      model,
+      "User:\n",
+      user
+    );
+  }
+} catch (error) {
+  console.error(error);
+}
+
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="description" content="Astro description" />
@@ -16,35 +49,31 @@ const { title } = Astro.props;
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
-	<body>
-		<slot />
+	<body class="flex h-screen">
+		<header class="p-3 flex flex-col gap-y-4">
+			<h1>{title}</h1>
+				<AccountButton
+					client:load
+					model={model || null}
+					imageUrl={imageUrl}
+				/>
+			<nav>
+				<ul>
+				<ul class="flex flex-col gap-y-4">
+					<li><a href="/" class="text-fuchsia-400">Marketing</a></li>
+					<li><a href="/student" class="text-fuchsia-400">Student</a></li>
+					<li><a href="/teacher" class="text-fuchsia-400">Teacher</a></li>
+				</ul>
+			</nav>
+		</header>
+		<main class="w-full">
+			<slot />	
+		</main>
+		<Toaster client:load />
 	</body>
 </html>
 <style is:global>
-	:root {
-		--accent: 136, 58, 234;
-		--accent-light: 224, 204, 250;
-		--accent-dark: 49, 10, 101;
-		--accent-gradient: linear-gradient(
-			45deg,
-			rgb(var(--accent)),
-			rgb(var(--accent-light)) 30%,
-			white 60%
-		);
-	}
-	html {
-		font-family: system-ui, sans-serif;
-		background: #13151a;
-	}
-	code {
-		font-family:
-			Menlo,
-			Monaco,
-			Lucida Console,
-			Liberation Mono,
-			DejaVu Sans Mono,
-			Bitstream Vera Sans Mono,
-			Courier New,
-			monospace;
+	body {
+		margin: 0;
 	}
 </style>
