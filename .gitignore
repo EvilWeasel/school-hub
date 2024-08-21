@@ -1,0 +1,15 @@
+**/.pem
+**/.key
+**/.crt
+**/.cert
+**/.pfx
+**/*.key
+
+**/node_modules
+**/.astro
+**/.cache
+**/.env
+**/temp
+**/tmp
+
+**/pb_data
